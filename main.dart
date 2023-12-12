@@ -55,7 +55,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // This code establishes an index for keeping track of current tab
   int index = 0;
+  // This code builds each individual page within the app
   final pages = [
     Center(child: Text("Temperature: ", style: TextStyle(fontStyle: FontStyle.normal))),
     Center(child: Text("Pressure: ", style: TextStyle(fontStyle: FontStyle.normal))),
@@ -65,13 +67,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    // This method is rerun every time setState is called
     return Scaffold(
+      // This code builds the naviagtion bar and tabs
       body: pages[index],
       bottomNavigationBar: NavigationBar(
       height: 60,
@@ -85,9 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
       ),
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.

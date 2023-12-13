@@ -1,5 +1,5 @@
 import 'dart:math';
-
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -188,29 +188,68 @@ class PageWithInteger extends StatelessWidget {
 }
 
 class TemperaturePage extends StatelessWidget {
+  final List<double> temperatureData = List.generate(10, (index) => _generateRandomTemperature());
   final int randomTemperature = Random().nextInt(100) + 1;
 
-  TemperaturePage({super.key});
+  static double _generateRandomTemperature() {
+    return (1 + (100 - 1) * (DateTime.now().microsecondsSinceEpoch % 100) / 100).toDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: const Color.fromARGB(255, 255, 190, 186),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '$randomTemperature°F', // Format as temperature in Fahrenheit
-              style: const TextStyle(fontSize: 48, color: Colors.white),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.25, // 25% of screen height
+            width: MediaQuery.of(context).size.width * 0.25, // 75% of screen width
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(show: false),
+                titlesData: FlTitlesData(show: false),
+                borderData: FlBorderData(
+                  show: false, // Set border to be invisible
+                ),
+                minX: 0,
+                maxX: 9,
+                minY: 0,
+                maxY: 100,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: temperatureData
+                        .asMap()
+                        .entries
+                        .map((entry) => FlSpot(entry.key.toDouble(), entry.value))
+                        .toList(),
+                    isCurved: true,
+                    color: Color.fromARGB(255, 168, 240, 234),
+                    dotData: FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Temperature',
-              style: TextStyle(fontSize: 24, color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$randomTemperature°F',
+                  style: const TextStyle(fontSize: 48, color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Temperature',
+                  style: TextStyle(fontSize: 24, color: Colors.white),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

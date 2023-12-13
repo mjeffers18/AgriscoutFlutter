@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -7,86 +9,208 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AgriScout',
+      title: 'Agriscout',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
-        useMaterial3: true,
+        primarySwatch: Colors.amber,
       ),
-      home: const MyHomePage(title: 'AgriScout'),
+      home: const HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  // ignore: library_private_types_in_public_api
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  // This code establishes an index for keeping track of current tab
-  int index = 0;
-  // This code builds each individual page within the app
-  final pages = [
-    Center(child: Text("Temperature: ", style: TextStyle(fontStyle: FontStyle.normal))),
-    Center(child: Text("Pressure: ", style: TextStyle(fontStyle: FontStyle.normal))),
-    Center(child: Text("Acceleration: ", style: TextStyle(fontStyle: FontStyle.normal))),
-    Center(child: Text("Humididity: ", style: TextStyle(fontStyle: FontStyle.normal)))
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+  bool isLocked = true;
+  final String correctAWSKey = "1234";
+
+  final List<Widget> _pages = [
+    const LockedPage(),
+    const LockedPage(),
+    const LockedPage(),
+    const LockedPage(),
+    const ConfigurationPage(),
+  ];
+
+  final List<Widget> _unlockedPages = [
+    TemperaturePage(),
+    PageWithInteger("Pressure", const Color.fromARGB(255, 184, 223, 255)),
+    PageWithInteger("Acceleration", const Color.fromARGB(255, 149, 255, 152)),
+    PageWithInteger("Humidity", const Color.fromARGB(255, 255, 223, 176)),
+    const ConfigurationPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called
     return Scaffold(
-      // This code builds the naviagtion bar and tabs
-      body: pages[index],
-      bottomNavigationBar: NavigationBar(
-      height: 60,
-      selectedIndex: index,
-      onDestinationSelected: (index) => setState(() => this.index = index),
-      destinations: [
-      NavigationDestination(icon: Icon(Icons.thermostat), label: "Temperature"),
-      NavigationDestination(icon: Icon(Icons.tire_repair), label: "Pressure"),
-      NavigationDestination(icon: Icon(Icons.shutter_speed), label: "Accelerometer"),
-      NavigationDestination(icon: Icon(Icons.water), label: "Humidity")
-      ],
-      ),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Agriscout'),
+      ),
+      body: isLocked ? _pages[_currentIndex] : _unlockedPages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.teal,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.black,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.wb_sunny),
+            label: 'Temperature',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.speed),
+            label: 'Pressure',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.directions_walk),
+            label: 'Acceleration',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.opacity),
+            label: 'Humidity',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Configuration',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void checkAWSKey(String userKey) {
+    setState(() {
+      isLocked = userKey != correctAWSKey;
+    });
+  }
+}
+
+class LockedPage extends StatelessWidget {
+  const LockedPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey,
+      child: const Center(
+        child: Text(
+          'Locked',
+          style: TextStyle(fontSize: 48, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+class ConfigurationPage extends StatefulWidget {
+  const ConfigurationPage({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _ConfigurationPageState createState() => _ConfigurationPageState();
+}
+
+class _ConfigurationPageState extends State<ConfigurationPage> {
+  final TextEditingController _awsUserKeyController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextField(
+            controller: _awsUserKeyController,
+            decoration: const InputDecoration(labelText: 'AWS User Key'),
+            obscureText: true,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              final homePageState =
+                  context.findAncestorStateOfType<_HomePageState>();
+              homePageState?.checkAWSKey(_awsUserKeyController.text);
+            },
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PageWithInteger extends StatelessWidget {
+  final String title;
+  final Color color;
+  final int randomValue = Random().nextInt(100) + 1;
+
+  PageWithInteger(this.title, this.color, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$randomValue',
+              style: const TextStyle(fontSize: 48, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 24, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TemperaturePage extends StatelessWidget {
+  final int randomTemperature = Random().nextInt(100) + 1;
+
+  TemperaturePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color.fromARGB(255, 255, 190, 186),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$randomTemperature°F', // Format as temperature in Fahrenheit
+              style: const TextStyle(fontSize: 48, color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Temperature',
+              style: TextStyle(fontSize: 24, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
